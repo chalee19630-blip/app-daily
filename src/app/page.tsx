@@ -1,69 +1,114 @@
-import Image from "next/image";
+import AppLayout from "@/components/AppLayout";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <AppLayout>
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-[var(--foreground)] mb-2">
+            Welcome to ProjectPilot AI
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-[var(--muted-foreground)]">
+            Manage your projects and tasks with AI assistance
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <StatCard title="Active Projects" value="5" icon="📁" color="bg-blue-100 text-blue-600" />
+          <StatCard title="Tasks Today" value="12" icon="✅" color="bg-green-100 text-green-600" />
+          <StatCard title="Completed" value="28" icon="🎉" color="bg-purple-100 text-purple-600" />
+          <StatCard title="AI Suggestions" value="3" icon="🤖" color="bg-orange-100 text-orange-600" />
         </div>
-      </main>
+
+        {/* Recent Projects */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-[var(--border)] mb-6">
+          <h2 className="text-xl font-semibold text-[var(--foreground)] mb-4">
+            Recent Projects
+          </h2>
+          <div className="space-y-4">
+            <ProjectItem name="Website Redesign" tasks={8} completed={5} />
+            <ProjectItem name="Mobile App MVP" tasks={15} completed={9} />
+            <ProjectItem name="Marketing Campaign" tasks={6} completed={6} />
+          </div>
+        </div>
+
+        {/* AI Assistant Card */}
+        <div className="bg-gradient-to-r from-[var(--primary)] to-[var(--accent)] rounded-2xl p-6 text-white">
+          <div className="flex items-start gap-4">
+            <div className="text-4xl">🤖</div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold mb-2">
+                AI Daily Planning
+              </h3>
+              <p className="text-white/80 mb-4">
+                Let AI help you organize your day based on priorities and deadlines.
+              </p>
+              <button className="px-4 py-2 bg-white text-[var(--primary)] rounded-xl font-medium hover:bg-white/90 transition-colors">
+                Plan My Day
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </AppLayout>
+  );
+}
+
+function StatCard({
+  title,
+  value,
+  icon,
+  color,
+}: {
+  title: string;
+  value: string;
+  icon: string;
+  color: string;
+}) {
+  return (
+    <div className="bg-white rounded-2xl p-6 shadow-sm border border-[var(--border)]">
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-sm text-[var(--muted-foreground)]">{title}</span>
+        <div className={`w-10 h-10 rounded-xl ${color} flex items-center justify-center`}>
+          <span className="text-lg">{icon}</span>
+        </div>
+      </div>
+      <p className="text-3xl font-bold text-[var(--foreground)]">{value}</p>
+    </div>
+  );
+}
+
+function ProjectItem({
+  name,
+  tasks,
+  completed,
+}: {
+  name: string;
+  tasks: number;
+  completed: number;
+}) {
+  const progress = Math.round((completed / tasks) * 100);
+  return (
+    <div className="flex items-center gap-4 p-4 rounded-xl bg-[var(--muted)] hover:bg-[var(--sidebar-hover)] transition-colors">
+      <div className="flex-1">
+        <h3 className="font-medium text-[var(--foreground)]">{name}</h3>
+        <p className="text-sm text-[var(--muted-foreground)]">
+          {completed}/{tasks} tasks completed
+        </p>
+      </div>
+      <div className="flex items-center gap-3">
+        <div className="w-24 h-2 bg-white rounded-full overflow-hidden">
+          <div
+            className="h-full bg-[var(--primary)] rounded-full transition-all"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <span className="text-sm font-medium text-[var(--foreground)] w-12 text-right">
+          {progress}%
+        </span>
+      </div>
     </div>
   );
 }
