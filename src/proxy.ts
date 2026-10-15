@@ -43,9 +43,12 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   // Protected routes - require authentication
+  // Note: Root route '/' requires exact match (startsWith would match everything)
+  const pathname = request.nextUrl.pathname
+  const isRootPath = pathname === '/'
   const protectedPaths = ['/my-day', '/projects', '/tasks', '/calendar', '/settings']
-  const isProtectedPath = protectedPaths.some((path) =>
-    request.nextUrl.pathname.startsWith(path)
+  const isProtectedPath = isRootPath || protectedPaths.some((path) =>
+    pathname === path || pathname.startsWith(path + '/')
   )
 
   if (isProtectedPath && !user) {

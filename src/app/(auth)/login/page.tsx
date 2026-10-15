@@ -1,16 +1,78 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Validate redirect URL to prevent open redirects
+  // Uses URL parser with a fixed base to guarantee same-origin destinations
+  // Only rejects path traversal (`..`) in pathname, allowing harmless `..` in query/hash
+  function getSafeRedirect(redirectParam: string | null): string {
+    if (!redirectParam) {
+      return '/';
+    }
+
+    // Trim whitespace
+    const trimmed = redirectParam.trim();
+    if (trimmed.length === 0) {
+      return '/';
+    }
+
+    // Reject backslashes (could bypass forward-slash checks)
+    if (trimmed.includes('\\')) {
+      return '/';
+    }
+
+    // Reject control characters (newlines, tabs, null bytes)
+    if (/[\x00-\x1f\x7f]/.test(trimmed)) {
+      return '/';
+    }
+
+    // Reject protocol-relative URLs (//evil.com)
+    if (trimmed.startsWith('//')) {
+      return '/';
+    }
+
+    // Must start with a single forward slash
+    if (!trimmed.startsWith('/')) {
+      return '/';
+    }
+
+    // Use URL parser with a fixed http origin to validate the destination
+    // This guarantees the result remains on the same origin
+    try {
+      const baseOrigin = 'http://localhost';
+      const parsed = new URL(trimmed, baseOrigin);
+
+      // Verify the origin matches our base (same-origin guarantee)
+      if (parsed.origin !== baseOrigin) {
+        return '/';
+      }
+
+      // Only reject path traversal in pathname, not in query/hash
+      // This allows harmless `..` in query strings like ?foo=..bar
+      if (parsed.pathname.includes('..')) {
+        return '/';
+      }
+
+      // Return the pathname + search + hash (same-origin relative URL)
+      return parsed.pathname + parsed.search + parsed.hash;
+    } catch {
+      // Invalid URL format
+      return '/';
+    }
+  }
+
+  const redirect = getSafeRedirect(searchParams.get('redirect'));
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +91,7 @@ export default function LoginPage() {
     if (error) {
       setError(error.message);
     } else {
-      router.push("/");
+      router.push(redirect);
       router.refresh();
     }
   };
@@ -39,6 +101,11 @@ export default function LoginPage() {
     setLoading(true);
 
     const supabase = createClient();
+
+    // Store redirect destination in cookie before OAuth (query params get lost in Supabase redirect)
+    if (redirect !== '/') {
+      document.cookie = `oauth_redirect=${encodeURIComponent(redirect)}; path=/; max-age=600; SameSite=Lax`;
+    }
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
@@ -168,5 +235,33 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+function LoginLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[var(--background)] px-4">
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-2xl p-8 shadow-sm border border-[var(--border)]">
+          <div className="animate-pulse">
+            <div className="h-8 bg-[var(--muted)] rounded mb-4"></div>
+            <div className="h-4 bg-[var(--muted)] rounded mb-8 w-2/3"></div>
+            <div className="space-y-4">
+              <div className="h-12 bg-[var(--muted)] rounded-xl"></div>
+              <div className="h-12 bg-[var(--muted)] rounded-xl"></div>
+              <div className="h-12 bg-[var(--primary)] rounded-xl opacity-50"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginLoading />}>
+      <LoginForm />
+    </Suspense>
   );
 }
